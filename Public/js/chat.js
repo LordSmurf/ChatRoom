@@ -33,6 +33,19 @@ const autoScroll = () => {
 }
 
 socket.on('message', (message) => {
+    //isTyping event
+    $messageFormInput.addEventListener('keypress', () => {
+        socket.emit('typing', {
+            username: message.username,
+            message: 'is typing...'
+        })
+    })
+
+    //stop typing
+    messageInput.addEventListener('keyup', () => {
+        socket.emit('stopTyping', '')
+    })
+
     console.log(message)
     const html = Mustache.render(messageTemplate, {
         username: message.username,
