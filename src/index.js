@@ -38,14 +38,14 @@ io.on('connection', (socket) => {
         callback()
     })
 
-    socket.on('notifyTyping', data => {
+/*     socket.on('notifyTyping', data => {
         typing.innerText = data.user + '' + data.message;
         console.log(data.user + data.message)
     })
 
     socket.on('notifyStopTyping', () => {
         typing.innerText = ''
-    })
+    }) */
 
     socket.on('sendMessage', (message, callback) => {
         const user = getUser(socket.id)
