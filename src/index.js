@@ -14,6 +14,7 @@ const port = process.env.PORT || 3000 // Sets port to env.PORT or 3000 default
 const publicDirectoryPath = path.join(__dirname, '../Public') // Sets public directory
 
 
+
 app.use(express.static(publicDirectoryPath)) // Sets the public directory on server
 
 io.on('connection', (socket) => {
