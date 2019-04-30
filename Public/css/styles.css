@@ -133,6 +133,10 @@ button:disabled {
     color: #0070CC;
 }
 
+.user_typing {
+    color: #6b47b8;
+}
+
 /* Message Composition Styles */
 
 .compose {

@@ -14,6 +14,11 @@
         </div>
         <div class="chat__main">
             <div id="messages" class="chat__messages"></div>
+            <script id="typing-template" type="text/html">
+            <p>
+                <span class="user_typing">{{username}} is typing...</span>
+            </p>
+            </script>
             <div class="compose">
                 <form autocomplete="off" id="message-form">
                     <input name="message" placeholder="Please enter your message" autocomplete="off" required>

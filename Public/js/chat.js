@@ -11,9 +11,14 @@ const $messages = document.querySelector('#messages')
 const messageTemplate = document.querySelector('#message-template').innerHTML
 const locationTemplate = document.querySelector('#location-template').innerHTML
 const sidebarTemplate = document.querySelector('#sidebar-template').innerHTML
+const userTypingTemplate = document.querySelector('#typing-template').innerHTML
+
 
 //Options
 const { username, room } = Qs.parse(location.search, { ignoreQueryPrefix: true })
+
+let isTyping = false;
+let typingTimeout = -1;
 
 const autoScroll = () => {
     const $newMessage = $messages.lastElementChild
@@ -32,20 +37,55 @@ const autoScroll = () => {
     }
 }
 
-socket.on('message', (message) => {
-/*     //isTyping event
-    $messageFormInput.addEventListener('keypress', () => {
+function stopTyping() {
+    if (typingTimeout > -1) {
+        clearTimeout(typingTimeout);
+    }
+
+    typingTimeout = -1;
+
+    if (isTyping) {
+        socket.emit('stopTyping', { username });
+    }
+
+    isTyping = false;
+}
+
+//isTyping event
+$messageFormInput.addEventListener('keydown', () => {
+    /* data format
+    {
+        username: String,
+        message: String
+    }
+    */
+
+    if (!isTyping) {
+        isTyping = true;
+
         socket.emit('typing', {
-            username: message.username,
+            username, // shortened version of 'username: username' -- this works because the property name and variable name are the same
             message: 'is typing...'
-        })
-    })
+        });
+    }
 
-    //stop typing
-    messageInput.addEventListener('keyup', () => {
-        socket.emit('stopTyping', '')
-    }) */
+    if (typingTimeout > -1) {
+        clearTimeout(typingTimeout);
+    }
 
+    typingTimeout = setTimeout(() => {
+        typingTimeout = -1;
+
+        stopTyping();
+    }, 5000);
+})
+
+//stop typing
+$messageFormInput.addEventListener('blur', () => {
+    stopTyping();
+})
+
+socket.on('message', (message) => {
     console.log(message)
     const html = Mustache.render(messageTemplate, {
         username: message.username,
@@ -54,6 +94,13 @@ socket.on('message', (message) => {
     })
     $messages.insertAdjacentHTML('beforeend', html)
     autoScroll()
+})
+
+socket.on('userTyping', (data) => {
+    const html = Mustache.render(userTypingTemplate, {
+        username: data.username
+    })
+    $messages.insertAdjacentHTML('beforeend', html)
 })
 
 socket.on('locationMessage', (message) => {
@@ -81,6 +128,8 @@ $messageForm.addEventListener('submit', (e) => {
     $messageFormButton.setAttribute('disabled', 'disabled')
 
     const message = e.target.elements.message.value
+
+    stopTyping();
 
     socket.emit('sendMessage', message, (error) => {
         $messageFormButton.removeAttribute('disabled')

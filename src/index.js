@@ -13,10 +13,38 @@ const io = socketio(server) // Defines io as http server
 const port = process.env.PORT || 3000 // Sets port to env.PORT or 3000 default
 const publicDirectoryPath = path.join(__dirname, '../Public') // Sets public directory
 
+
 app.use(express.static(publicDirectoryPath)) // Sets the public directory on server
 
 io.on('connection', (socket) => {
     console.log('New WebSocket connection!') // Logs new socket connection
+
+    socket.on('typing', data => {
+        /* data format
+        {
+            username: String,
+            message: String
+        }
+        */
+
+
+        // So it would have to be user.username? I think I tried that and got nowhere
+        // Ah I see
+        //
+        // not quite. it would have to be data.username :)
+        // do you see the issue here? look at the property you are accessing
+        //               vvvv
+        console.log(`${data.username} ${data.message}`)
+
+        socket.emit('userTyping', data => {
+            data.username,
+            data.message
+        })
+    })
+
+    socket.on('stopTyping', data => {
+        console.log(`${data.username} stopped typing`)
+    })
 
     socket.on('join', (options, callback) => {
         const { error, user } = addUser({ id: socket.id, ...options })
@@ -33,19 +61,8 @@ io.on('connection', (socket) => {
             room: user.room,
             users: getUsersInRoom(user.room)
         })
-
-
         callback()
     })
-
-/*     socket.on('notifyTyping', data => {
-        typing.innerText = data.user + '' + data.message;
-        console.log(data.user + data.message)
-    })
-
-    socket.on('notifyStopTyping', () => {
-        typing.innerText = ''
-    }) */
 
     socket.on('sendMessage', (message, callback) => {
         const user = getUser(socket.id)
